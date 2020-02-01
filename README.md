@@ -6,4 +6,4 @@ To split up a long job into a recurring small job. Use `--` to separate command 
 
 This job will relaunch every time it stops due to timeout, until it completes successfully or throws an error.
 
-NOTE: Requires that all bsub options are given as command line arguments, rather than in the header of foo.sh
+*UPDATE*: Now allows bsub options to be included the header of foo.sh with `#BSUB ...`
