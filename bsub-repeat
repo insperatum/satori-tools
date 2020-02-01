@@ -1,4 +1,5 @@
 #!/bin/python
+from __future__ import print_function
 """
 Call as:
 bsub-repeat args -- cmd
@@ -32,4 +33,7 @@ if "LSB_JOBID" in os.environ:
     run(["bkill", new_job_id])
 
 else:
-    run(["bsub"] + bsub_args + [current_file] + sys.argv[1:])
+    file = os.popen("which {}".format(cmd[0])).read().strip()
+    with open(file, "r") as f:
+        extra_args = [arg for x in f.readlines() if x.lower().strip().startswith("#bsub") for arg in x.strip().split()[1:]]
+    run(["bsub"] + extra_args + bsub_args + [current_file] + extra_args + sys.argv[1:])
