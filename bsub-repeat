@@ -6,6 +6,7 @@ bsub-repeat args -- cmd
 """
 import sys
 import os
+import subprocess
 
 current_file = os.path.abspath(__file__)
 
@@ -17,19 +18,24 @@ except Exception as e:
     print("Error running:", sys.argv)
     raise e
 
-def run(cmd, get_slurm_id=False):
+def run(cmd, get_slurm_id=False, shell=False):
     print("Running:", " ".join(cmd))
-    output = os.popen(" ".join(cmd)).read().strip()
-    sys.stdout.flush()
-    print(output)
-    if get_slurm_id: return output.split(" ")[1][1:-1] # Format should be Job <job_id> has....
+    if shell:
+        assert not get_slurm_id
+        subprocess.Popen(" ".join(cmd), shell=True).wait()
+        sys.stdout.flush()
+    else:
+        output = os.popen(" ".join(cmd)).read().strip()
+        sys.stdout.flush()
+        print(output)
+        if get_slurm_id: return output.split(" ")[1][1:-1] # Format should be Job <job_id> has....
 
 if "LSB_JOBID" in os.environ:
 
     current_job_id = os.environ["LSB_JOBID"]
 
     new_job_id = run(['bsub'] + bsub_args + ['-w "ended({})"'.format(current_job_id), "--", current_file] + sys.argv[1:], get_slurm_id=True)
-    run(cmd)
+    run(cmd, shell=True)
     run(["bkill", new_job_id])
 
 else:
